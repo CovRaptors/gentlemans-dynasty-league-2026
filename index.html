@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1412"><title>GentlemansDrill — Final Drive</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#091310;color:#f2f7f3;font-family:system-ui,-apple-system,Arial,sans-serif}button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:3px solid #c5e67b}
+#app{max-width:740px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;background:#0a1511}
+.scorebar{height:76px;flex-shrink:0;background:#0a1511;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;gap:5px;border-bottom:1px solid #2c4838}
+.team{display:flex;align-items:center;gap:6px;min-width:0}.team b{font-size:clamp(17px,5vw,28px)}.team .pts{font-size:clamp(28px,9vw,48px);font-weight:850;font-variant-numeric:tabular-nums}.you{font-size:9px;color:#a8c5ae;letter-spacing:1px}.center{text-align:center;min-width:74px}.center strong{display:block;color:#a4dc69;font-size:22px;line-height:1.1}.center small{font-weight:750;color:#b9c6bc}.menu{background:#17291e;border:1px solid #2f4838;color:white;border-radius:12px;padding:10px}
+.gamearea{position:relative;flex:1;min-height:350px;max-height:calc(100dvh - 390px);overflow:hidden;background:#265c3d}
+#field{width:100%;height:100%;display:block;touch-action:manipulation}
+.status{position:absolute;top:10px;left:10px;background:#08140fe8;border:1px solid #41694a;border-radius:12px;padding:9px 11px;font-size:13px;pointer-events:none;max-width:52%}.status strong{display:block;font-size:17px}.status span{color:#b8c8bb}
+.fieldtools{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:7px}.fieldtools button{background:#0a1714e8;color:white;border:1px solid #607768;border-radius:22px;padding:8px 11px;font-size:12px;font-weight:700}
+.playbook{position:relative;background:#0a1511;border-radius:20px 20px 0 0;margin-top:-15px;padding:12px 14px max(14px,env(safe-area-inset-bottom));z-index:2;box-shadow:0 -5px 20px #06110c55}
+.handle{width:46px;height:5px;border-radius:5px;background:#456053;margin:0 auto 11px}
+.row{display:flex;align-items:center;gap:8px;justify-content:space-between}.heading{font-size:18px;font-weight:900;letter-spacing:1px}.pill{background:#172b21;color:#d9e7dd;border:1px solid #355743;border-radius:25px;padding:8px 11px;font-size:12px;font-weight:700}
+.defense{display:flex;align-items:center;justify-content:space-between;margin:12px 0 8px;gap:6px}.defense small{font-size:11px;color:#8b9c91;letter-spacing:1px;font-weight:800}.defense b{font-size:13px}.blitz{color:#ed8278}.hint{font-size:12px;color:#b7c5b9;margin:7px 0 11px}
+#targets{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}#targets button{min-width:96px;flex:1;background:#13251b;border:1px solid #365843;border-radius:12px;color:white;padding:9px 7px;text-align:left}#targets button.active{border:2px solid #b4df71;background:#253d25}#targets small{display:block;color:#afc6b1;font-size:10px;margin-top:3px}
+#playtypes{display:flex;gap:6px;margin:7px 0;overflow-x:auto}#playtypes button{border:0;background:#192b20;color:#b2c3b6;border-radius:10px;padding:8px 13px;font-size:12px;font-weight:800;white-space:nowrap}#playtypes button.active{background:#b2db70;color:#142112}
+#plays{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}#plays button{flex:0 0 auto;border:1px solid #3a5944;background:#12231a;color:white;border-radius:12px;padding:11px 12px;font-size:12px}#plays button.active{border-color:#c3e88a;background:#294a2c}
+.bottom{display:flex;gap:9px;align-items:center;margin-top:8px}.snap{flex:1;background:#a8d76b;border:0;color:#10220e;font-size:17px;font-weight:950;padding:14px;border-radius:13px}.secondary{background:#172b21;color:#d5e5d8;border:1px solid #395b45;border-radius:12px;padding:13px;font-weight:750;font-size:12px}
+#routeSheet{position:absolute;z-index:5;bottom:10px;left:10px;right:10px;background:#0b1a15f7;border:1px solid #7da56e;border-radius:17px;padding:13px;box-shadow:0 8px 30px #0009;display:none}
+#routeSheet.show{display:block}#routeSheet header{display:flex;justify-content:space-between;align-items:center;font-weight:850;margin-bottom:9px}#routeSheet header button{background:none;border:0;color:white;font-size:23px}
+#routeOptions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}#routeOptions button{padding:11px 5px;background:#203a29;color:#f4fff5;border:1px solid #43694b;border-radius:10px;font-size:12px}#routeOptions button.active{background:#a8d76b;color:#13200e}
+#modal{position:fixed;inset:0;background:#000b;z-index:10;display:none;align-items:center;justify-content:center;padding:20px}#modal.show{display:flex}.dialog{width:min(100%,400px);background:#13261b;border:1px solid #638b67;border-radius:18px;padding:22px;text-align:center}.dialog h2{margin:0 0 10px}.dialog p{color:#c9d8cd;line-height:1.5}.dialog button{background:#a8d76b;border:0;padding:12px 25px;border-radius:11px;font-weight:800}
+@media(min-width:650px){.gamearea{max-height:620px;min-height:480px}.playbook{padding-left:24px;padding-right:24px}}
+@media(max-height:740px){.scorebar{height:62px}.gamearea{min-height:260px;max-height:calc(100dvh - 345px)}.playbook{padding-top:7px}.hint{margin:4px 0}.defense{margin:7px 0}.bottom{margin-top:4px}}
+</style>
+<style>
+/* Compact mobile layout v3 */
+html,body{overflow-x:hidden}
+#app{width:100%;max-width:740px;overflow:hidden}
+.scorebar{height:58px;padding:5px 8px;gap:3px}
+.scorebar .menu{padding:7px 9px;border-radius:9px;font-size:16px}
+.team{gap:4px}.team b{font-size:clamp(14px,4.4vw,21px)}.team .pts{font-size:clamp(25px,8vw,39px)}
+.center{min-width:55px}.center small{font-size:11px}.center strong{font-size:19px}
+.you{font-size:8px}
+.gamearea{flex:0 0 auto;height:clamp(290px,44dvh,440px);min-height:0;max-height:none}
+.status{top:7px;left:7px;padding:6px 8px;border-radius:9px;font-size:10px;max-width:55%}
+.status strong{font-size:12px}.status span{font-size:10px}
+.fieldtools{top:7px;right:7px;gap:4px}
+.fieldtools button{padding:5px 8px;font-size:10px;border-radius:10px}
+.playbook{margin-top:-12px;padding:9px 10px max(10px,env(safe-area-inset-bottom));border-radius:14px 14px 0 0}
+.handle{margin-bottom:6px;width:35px;height:4px}
+.heading{font-size:15px}.pill{font-size:10px;padding:6px 8px}
+.defense{margin:8px 0 4px}.defense small{font-size:10px}.defense b{font-size:11px}
+.hint{font-size:11px;margin:3px 0 6px}
+#targets{gap:5px;padding-bottom:4px}
+#targets button{min-width:0;flex:1 1 0;padding:7px 3px;border-radius:8px;white-space:normal;text-align:center;overflow:hidden}
+#targets button b{display:block;font-size:10px;line-height:1.2;overflow-wrap:anywhere}
+#targets small{font-size:9px;line-height:1.2;margin-top:3px}
+#playtypes{margin:5px 0;gap:5px}
+#playtypes button{padding:6px 11px;font-size:10px;border-radius:8px}
+#plays{gap:5px;padding-bottom:4px}
+#plays button{font-size:10px;padding:8px 9px;border-radius:8px}
+.bottom{gap:6px;margin-top:5px}
+.secondary{font-size:10px;padding:10px 8px;border-radius:9px}
+.snap{font-size:14px;padding:11px;border-radius:9px}
+#routeSheet{bottom:8px;left:8px;right:8px;padding:10px}
+#routeOptions{grid-template-columns:repeat(4,1fr);gap:5px}
+#routeOptions button{padding:9px 3px;font-size:11px}
+@media(max-width:380px){
+ .you{display:none}.team b{font-size:14px}.team .pts{font-size:26px}
+ .gamearea{height:42dvh}
+ #targets button b{font-size:9px}
+}
+</style>
+</head><body><main id="app">
+<header class="scorebar"><button class="menu" id="menu">☰</button><div class="team"><b>SEA</b><span class="you">YOU</span><span class="pts" id="sea">35</span></div><div class="center"><small id="quarter">Q4</small><strong id="clock">1:33</strong></div><div class="team"><span class="pts" id="dal">41</span><b>DAL</b></div></header>
+<div class="gamearea" id="gamearea"><canvas id="field"></canvas>
+<div class="status"><strong id="down">2nd &amp; 15 · own 21</strong><span id="clockState">Clock running · 1 timeout</span></div>
+<div class="fieldtools"><button id="formation">11 personnel</button><button id="coverage">Cover 3</button><button id="speed">1× Speed</button><button id="ratings">Routes ✓</button><button id="drawMode">✎ Draw: off</button></div>
+<div id="routeSheet"><header><span id="routeTitle">Choose route</span><button id="closeRoute">×</button></header><div id="routeOptions"></div></div></div>
+<section class="playbook"><div class="handle"></div><div class="row"><span class="heading">PLAY CALL</span><button class="pill" id="tempo">NO HUDDLE</button><button class="pill" id="undo">↶ Undo</button></div>
+<div class="defense"><small>DEFENSE</small><b>Light box <span class="blitz">· Showing blitz</span></b></div>
+<p class="hint" id="hint">Tap a receiver to cycle routes. Draw: select a receiver, then drag a path on the field.</p>
+<div id="targets"></div><div id="playtypes"></div><div id="plays"></div>
+<div class="bottom"><button class="secondary" id="timeout">Timeout (1)</button><button class="secondary" id="spike">Spike</button><button class="snap" id="snap">SNAP ▶</button></div></section></main>
+<div id="modal"><div class="dialog"><h2 id="modalTitle"></h2><p id="modalText"></p><button id="modalClose">Continue</button></div></div>
+<style>
+.fieldtools{top:6px;right:6px;max-width:115px}.fieldtools button{padding:5px 7px;font-size:10px}
+#field{touch-action:none}.status{z-index:1}
+#targets button{min-width:0}#targets small{font-size:9px}
+</style>
+<script>
+const $=id=>document.getElementById(id),canvas=$('field'),ctx=canvas.getContext('2d');
+const ROUTES=['Go','Slant','Out','In','Post','Corner','Curl','Comeback','Flat','Drag','Seam','Fade'];
+const calls={PASS:['Quick pass','Screen','Deep shot middle','Deep shot left','Deep shot right','Play action','Rollout'],RUN:['Inside run','Outside left','Outside right','Draw','Counter'],SPECIAL:['Spike']};
+const receiverNames={16:'T. Lockett',87:'N. Fant',11:'J. Smith-Njigba',14:'D. Metcalf',31:'D. Dallas',82:'W. Dissly',89:'C. Parkinson',22:'K. Walker',83:'B. Bobo'};
+let s={clock:93,down:2,dist:15,ball:21,sea:35,dal:41,timeouts:1,category:'PASS',call:'Quick pass',target:14,showRoutes:true,playing:false,noHuddle:false,personnel:'11',coverage:'Cover 3',drawMode:false};
+let offense=[],defense=[],ball={x:.51,y:.66},animation=null,undo=null,routeStroke=null,selected=null;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const baseOff=()=>[{n:16,name:receiverNames[16],x:.08,y:.67,route:'Go',eligible:1},
+{n:67,x:.34,y:.67},{n:68,x:.42,y:.67},{n:63,x:.50,y:.67},{n:75,x:.58,y:.67},{n:72,x:.66,y:.67},
+{n:87,name:receiverNames[87],x:.76,y:.67,route:'Seam',eligible:1},
+{n:11,name:receiverNames[11],x:.88,y:.67,route:'Slant',eligible:1},
+{n:14,name:receiverNames[14],x:.97,y:.67,route:'Go',eligible:1},
+{n:7,name:'G. Smith',x:.51,y:.79},
+{n:31,name:receiverNames[31],x:.44,y:.88,route:'Flat',eligible:1}];
+const baseDef=()=>[{n:21,x:.12,y:.30,role:'CB'},{n:6,x:.44,y:.19,role:'S'},{n:1,x:.52,y:.42,role:'LB'},
+{n:90,x:.35,y:.51,role:'DL'},{n:97,x:.43,y:.51,role:'DL'},{n:54,x:.52,y:.52,role:'DL'},{n:11,x:.62,y:.51,role:'DL'},
+{n:28,x:.78,y:.21,role:'S'},{n:3,x:.95,y:.30,role:'CB'},{n:26,x:.81,y:.40,role:'NB'},{n:14,x:.68,y:.40,role:'LB'}];
+function configurePersonnel(){
+ offense=baseOff();let replacements={
+ '10':[[87,83,.76,.67]],'11':[],
+ '12':[[11,89,.83,.67]],'21':[[11,22,.56,.86]],
+ '22':[[11,89,.78,.67],[14,22,.57,.86]],
+ '13':[[11,89,.84,.67],[14,83,.93,.67]]
+ }[s.personnel]||[];
+ replacements.forEach(([oldN,newN,x,y])=>{let p=offense.find(q=>q.n===oldN);if(p){p.n=newN;p.name=receiverNames[newN];p.x=x;p.y=y;p.route=newN===22?'Flat':'Seam'}});
+ defense=baseDef();
+ // Base, nickel, and dime change alignment and coverage distribution with offensive personnel.
+ let dbs=s.personnel==='10'?6:s.personnel==='11'?5:s.personnel==='12'?5:4;
+ if(dbs===6){defense.find(p=>p.n===14).role='DB';defense.find(p=>p.n===14).y=.32}
+ if(dbs===4){let nb=defense.find(p=>p.n===26);nb.role='LB';nb.y=.49;defense.find(p=>p.n===1).y=.47}
+ s.coverage=dbs===6?'Cover 4':dbs===5?'Cover 3':'Cover 1';
+ selected=offense.find(p=>p.eligible&&p.n===s.target)||offense.find(p=>p.eligible);
+ s.target=selected.n;
+ ball={x:.50,y:.66};
+}
+function dims(){let r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(r.width*d)||canvas.height!==Math.round(r.height*d)){canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d)}ctx.setTransform(d,0,0,d,0,0);return {w:r.width,h:r.height}}
+function routePoints(p){let x=p.x,y=p.y,inside=p.x>.5?-1:1,outside=-inside;
+ const pt=(dx,dy)=>[clamp(x+dx,.018,.982),clamp(y-dy,.02,.97)],stem=d=>pt(0,d);
+ switch(p.route){
+ case 'Go':return [[x,y],stem(.13),stem(.42)];
+ case 'Fade':return [[x,y],pt(outside*.02,.13),pt(outside*.055,.41)];
+ case 'Slant':return [[x,y],stem(.045),pt(inside*.18,.17)];
+ case 'Out':return [[x,y],stem(.16),pt(outside*.18,.16)];
+ case 'In':return [[x,y],stem(.19),pt(inside*.20,.19)];
+ case 'Post':return [[x,y],stem(.23),pt(inside*.16,.41)];
+ case 'Corner':return [[x,y],stem(.22),pt(outside*.15,.40)];
+ case 'Curl':return [[x,y],stem(.25),pt(inside*.016,.20)];
+ case 'Comeback':return [[x,y],stem(.31),pt(outside*.055,.24)];
+ case 'Flat':return [[x,y],pt(outside*.06,.018),pt(outside*.19,.045)];
+ case 'Drag':return [[x,y],stem(.045),pt(inside*.31,.08)];
+ case 'Seam':return [[x,y],stem(.18),pt(inside*.035,.40)];
+ default:return [[x,y],stem(.24)];
+ }}
+function path(p){return p.custom||routePoints(p)}
+function posAt(points,t){let lengths=[],total=0;for(let i=1;i<points.length;i++){let a=points[i-1],b=points[i],l=Math.hypot((b[0]-a[0])*1.4,b[1]-a[1]);lengths.push(l);total+=l}if(!total)return points[0];let d=t*total;for(let i=0;i<lengths.length;i++){if(d<=lengths[i]){let f=d/lengths[i];return [lerp(points[i][0],points[i+1][0],f),lerp(points[i][1],points[i+1][1],f)]}d-=lengths[i]}return points.at(-1)}
+function draw(){let {w,h}=dims();ctx.fillStyle='#2a5d40';ctx.fillRect(0,0,w,h);
+ for(let i=0;i<11;i++){let y=i*h/10;ctx.fillStyle=i%2?'#2d6243':'#2a5a3e';ctx.fillRect(0,y,w,h/10);ctx.strokeStyle='#e1eadb75';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();ctx.fillStyle='#fff9';ctx.font='bold 11px system-ui';ctx.textAlign='left';ctx.fillText(String(i*10%60),6,y+14)}
+ ctx.setLineDash([5,9]);ctx.strokeStyle='#dce8d4a0';ctx.beginPath();ctx.moveTo(w*.08,0);ctx.lineTo(w*.08,h);ctx.moveTo(w*.92,0);ctx.lineTo(w*.92,h);ctx.stroke();ctx.setLineDash([]);
+ for(let [y,c] of [[.67,'#86baff'],[.45,'#e8d064']]){ctx.strokeStyle=c;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,h*y);ctx.lineTo(w,h*y);ctx.stroke()}
+ if(s.showRoutes&&!s.playing){for(let p of offense.filter(p=>p.eligible)){let points=path(p);ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x*w,y*h):ctx.moveTo(x*w,y*h));ctx.strokeStyle=p.n===s.target?'#edffa8':'#d8eee3ba';ctx.lineWidth=p.n===s.target?3:2;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([])}}
+ if(routeStroke){ctx.beginPath();routeStroke.forEach(([x,y],i)=>i?ctx.lineTo(x*w,y*h):ctx.moveTo(x*w,y*h));ctx.strokeStyle='#f5ef92';ctx.lineWidth=3;ctx.setLineDash([3,4]);ctx.stroke();ctx.setLineDash([])}
+ function dot(p,color){let x=p.x*w,y=p.y*h,r=clamp(w*.031,9,14);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle=p.n===s.target&&p.eligible?'#fff':'#13231b';ctx.lineWidth=p.n===s.target&&p.eligible?3:2;ctx.stroke();ctx.fillStyle='#102017';ctx.font=`bold ${Math.max(9,r*.85)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.n,x,y);if(p.name&&(p.n===s.target||p.n===7)){ctx.font='bold 10px system-ui';ctx.strokeStyle='#0b2014';ctx.lineWidth=3;ctx.strokeText(p.name,x,y+r+10);ctx.fillStyle='#fff';ctx.fillText(p.name,x,y+r+10)}}
+ defense.forEach(p=>dot(p,'#e4b64e'));offense.forEach(p=>dot(p,'#a6db6d'));
+ // Animated football: white-laced brown ellipse, always drawn on top.
+ let bx=ball.x*w,by=ball.y*h;ctx.save();ctx.translate(bx,by);ctx.rotate(animation?.ballAngle||0);ctx.fillStyle='#8b4b26';ctx.strokeStyle='#f2e5cf';ctx.lineWidth=1.3;ctx.beginPath();ctx.ellipse(0,0,9,5,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.strokeStyle='#fff';ctx.beginPath();ctx.moveTo(-3,0);ctx.lineTo(3,0);ctx.moveTo(-1,-2);ctx.lineTo(-1,2);ctx.moveTo(1,-2);ctx.lineTo(1,2);ctx.stroke();ctx.restore();
+ ctx.textAlign='left';ctx.textBaseline='alphabetic'}
+function render(){ $('sea').textContent=s.sea;$('dal').textContent=s.dal;$('clock').textContent=`${Math.floor(s.clock/60)}:${String(s.clock%60).padStart(2,'0')}`;$('down').textContent=`${['','1st','2nd','3rd','4th'][s.down]} & ${s.dist} · ${s.ball<=50?'own '+s.ball:'their '+(100-s.ball)}`;$('clockState').textContent=`Clock ${s.playing?'stopped':'running'} · ${s.timeouts} timeout${s.timeouts===1?'':'s'}`;$('timeout').textContent=`Timeout (${s.timeouts})`;
+ $('formation').textContent=s.personnel+' personnel'+(s.noHuddle?' 🔒':' ▾');$('coverage').textContent=s.coverage;$('tempo').textContent=s.noHuddle?'NO HUDDLE 🔒':'HUDDLE';
+ $('drawMode').textContent=s.drawMode?'✎ Draw: ON':'✎ Draw: off';
+ $('targets').innerHTML=offense.filter(p=>p.eligible).map(p=>`<button data-target="${p.n}" class="${s.target===p.n?'active':''}"><b>#${p.n} ${p.name.split(' ').slice(-1)[0]}</b><small>${p.custom?'Drawn':p.route} · tap</small></button>`).join('');
+ $('playtypes').innerHTML=Object.keys(calls).map(c=>`<button data-category="${c}" class="${c===s.category?'active':''}">${c}</button>`).join('');
+ $('plays').innerHTML=calls[s.category].map(c=>`<button data-call="${c}" class="${c===s.call?'active':''}">${c}</button>`).join('');draw()}
+function cycle(p){p.custom=null;p.route=ROUTES[(ROUTES.indexOf(p.route)+1)%ROUTES.length];s.target=p.n;selected=p;render()}
+function popup(title,msg){$('modalTitle').textContent=title;$('modalText').textContent=msg;$('modal').classList.add('show')}
+$('modalClose').onclick=()=>$('modal').classList.remove('show');
+$('targets').onclick=e=>{let b=e.target.closest('[data-target]');if(!b||s.playing)return;cycle(offense.find(p=>p.n==b.dataset.target))};
+function pointerPos(e){let r=canvas.getBoundingClientRect();return [clamp((e.clientX-r.left)/r.width,0,1),clamp((e.clientY-r.top)/r.height,0,1)]}
+function hitReceiver(pt){return offense.filter(p=>p.eligible).find(p=>Math.hypot((p.x-pt[0])*1.2,p.y-pt[1])<.085)}
+canvas.addEventListener('pointerdown',e=>{if(s.playing)return;let pt=pointerPos(e),p=hitReceiver(pt);if(s.drawMode){if(p){selected=p;s.target=p.n}if(!selected)return;routeStroke=[[selected.x,selected.y],pt];canvas.setPointerCapture(e.pointerId);draw()}else if(p)cycle(p)});
+canvas.addEventListener('pointermove',e=>{if(!routeStroke)return;let pt=pointerPos(e),last=routeStroke.at(-1);if(Math.hypot((pt[0]-last[0])*1.2,pt[1]-last[1])>.012){routeStroke.push(pt);draw()}});
+canvas.addEventListener('pointerup',e=>{if(!routeStroke)return;let pts=routeStroke;routeStroke=null;if(pts.length>2&&selected){let last=pts.at(-1),x0=selected.x,y0=selected.y;let dx=last[0]-x0,dy=y0-last[1];let endDist=Math.hypot(dx,dy);if(endDist>.045){ // identify closest football route by shape and break location, not just end point
+ let best=ROUTES[0],score=Infinity;for(let r of ROUTES){let test={...selected,route:r},q=routePoints(test);let error=0;for(let k=1;k<=8;k++){let a=posAt(pts,k/8),b=posAt(q,k/8);error+=(a[0]-b[0])**2*1.4+(a[1]-b[1])**2}if(error<score){score=error;best=r}}selected.route=best;selected.custom=null;$('hint').textContent=`Drawing matched to ${best} route. Tap receiver to cycle, or draw again.`}}
+ render()});
+$('drawMode').onclick=()=>{s.drawMode=!s.drawMode;$('hint').textContent=s.drawMode?'DRAW ON: tap a receiver, then drag on the field to sketch its route.':'Tap a receiver to cycle routes; dotted paths update instantly.';render()};
+$('ratings').onclick=()=>{s.showRoutes=!s.showRoutes;$('ratings').textContent=s.showRoutes?'Routes ✓':'Routes ○';draw()};
+$('formation').onclick=()=>{if(s.noHuddle){popup('Personnel locked','No-huddle keeps the offense on the field, so the defense cannot substitute either. Huddle to change personnel.');return}let options=['10','11','12','21','22','13'];s.personnel=options[(options.indexOf(s.personnel)+1)%options.length];configurePersonnel();render()};
+$('coverage').onclick=()=>popup('Defensive look',`${s.coverage} is the current pre-snap shell. The defense rotates after the snap and may blitz or drop into coverage. Its personnel package responds to your offensive grouping.`);
+$('tempo').onclick=()=>{s.noHuddle=!s.noHuddle;render()};
+$('playtypes').onclick=e=>{let b=e.target.closest('[data-category]');if(b&&!s.playing){s.category=b.dataset.category;s.call=calls[s.category][0];render()}};
+$('plays').onclick=e=>{let b=e.target.closest('[data-call]');if(b&&!s.playing){s.call=b.dataset.call;render()}};
+$('menu').onclick=()=>popup('GentlemansDrill','2D animated prototype: football snap, blocking, defensive rotation, blitz, route running and ball flight. Not yet driven by historical NFL tracking data.');
+$('undo').onclick=()=>{if(!undo||s.playing)return popup('Undo','No previous play available.');s={...undo.state};offense=undo.offense.map(p=>({...p}));defense=undo.defense.map(p=>({...p}));ball={x:.5,y:.66};undo=null;render()};
+$('timeout').onclick=()=>{if(s.timeouts&& !s.playing){s.timeouts--;render();popup('Timeout called','The offense may substitute after a timeout.')}};
+$('spike').onclick=()=>{if(s.down<4&&!s.playing){s.down++;s.clock=Math.max(0,s.clock-2);render();popup('Spike','Clock stopped. Down advanced.')}};
+$('speed').onclick=()=>popup('Animation speed','The current animation lasts about four seconds.');
+const smooth=t=>t*t*(3-2*t);
+function runPlay(){
+ if(s.playing)return;if(s.clock<=0)return popup('Final whistle','Time has expired.');
+ undo={state:{...s},offense:offense.map(p=>({...p})),defense:defense.map(p=>({...p}))};
+ s.playing=true;
+ const oStart=offense.map(p=>({x:p.x,y:p.y})),dStart=defense.map(p=>({x:p.x,y:p.y}));
+ const qb=offense.find(p=>p.n===7),target=offense.find(p=>p.n===s.target&&p.eligible)||offense.find(p=>p.eligible);
+ const rushers=defense.filter(p=>p.role==='DL'||(p.role==='LB'&&p.n===14));
+ const throwPlay=s.category==='PASS',passDuration=throwPlay?3600:2900,throwAt=throwPlay?1950:950;
+ let start=performance.now(),throwStart=null,flightFrom=null,flightTo=null,completed=Math.random()<.64,blitz=Math.random()<.55;
+ let gain=throwPlay?(s.call.includes('Deep')?Math.floor(12+Math.random()*25):Math.floor(3+Math.random()*16)):Math.floor(-2+Math.random()*12);
+ if(!completed)gain=0;
+ function tick(now){let elapsed=now-start,t=clamp(elapsed/passDuration,0,1),runT=clamp(elapsed/2400,0,1);
+ // Receivers follow their assigned route geometry.
+ offense.forEach((p,i)=>{let origin=oStart[i];if(p.eligible){let points=path({...p,x:origin.x,y:origin.y});let xy=posAt(points,runT*.85);p.x=xy[0];p.y=xy[1]}else if(p.n===7){p.x=origin.x+(s.call==='Rollout'?.07:0)*smooth(runT);p.y=origin.y-.025*smooth(runT)}else{let sway=Math.sin(t*8+i)*.012;p.x=origin.x+sway;p.y=origin.y-.016*Math.min(1,t*4)}});
+ // Defenders: linemen rush, LBs may blitz or drop, safeties rotate based on shell.
+ defense.forEach((p,i)=>{let orig=dStart[i],u=smooth(runT);
+ if(p.role==='DL'){p.y=lerp(orig.y,.66,u*.65);p.x=orig.x+(i%2?-.015:.015)*u}
+ else if(p.role==='LB'){let rush=blitz&&p.n===14;p.y=lerp(orig.y,rush?.67:.34,u*.7);p.x=orig.x+(rush?-.045:.015)*u}
+ else if(p.role==='S'){let rotation=s.coverage==='Cover 1'?(p.n===6?.13:.30):s.coverage==='Cover 4'?.12:.23;p.y=lerp(orig.y,rotation,u*.65);p.x=clamp(orig.x+(p.n===6?-.09:.08)*u,.06,.94)}
+ else {let near=offense.filter(q=>q.eligible).sort((a,b)=>Math.abs(a.x-p.x)-Math.abs(b.x-p.x))[0];p.x=lerp(orig.x,near?.x??orig.x,u*.22);p.y=lerp(orig.y,.28,u*.5)}
+ });
+ if(elapsed<260){ball={x:.5,y:.66}}
+ else if(elapsed<throwAt){ball={x:qb.x,y:qb.y-.018}}
+ else{
+ if(throwStart===null){throwStart=elapsed;flightFrom={x:qb.x,y:qb.y};flightTo={x:target.x,y:target.y}}
+ let f=clamp((elapsed-throwStart)/650,0,1);
+ ball={x:lerp(flightFrom.x,flightTo.x,f),y:lerp(flightFrom.y,flightTo.y,f)-Math.sin(Math.PI*f)*.035};
+ animation={ballAngle:Math.PI*f};
+ }
+ draw();
+ if(t<1){requestAnimationFrame(tick);return}
+ s.playing=false;animation=null;
+ let used=throwPlay?6:8;s.clock=Math.max(0,s.clock-used);
+ if(completed){s.ball+=gain;if(s.ball>=100){s.sea+=7;s.ball=25;s.down=1;s.dist=10}
+ else if(gain>=s.dist){s.down=1;s.dist=10}else{s.down++;s.dist=Math.max(1,s.dist-gain)}}
+ else s.down++;
+ let turnover=s.down>4;if(turnover){s.down=1;s.dist=10;s.ball=25}
+ let msg=s.ball===25&&completed&&gain>10&&s.sea>undo.state.sea?'Touchdown!':turnover?'Turnover on downs':completed?`Gain of ${gain} yards`:'Incomplete pass';
+ // Keep personnel/defense when in no-huddle; reset formation and coverage between snaps.
+ configurePersonnel();render();
+ popup(msg,`Animated ${s.call.toLowerCase()} with ${blitz?'a defensive blitz':'a coverage drop'} and ${s.coverage} shell. This prototype uses illustrative movement and simplified random results, not real NFL tracking or probability data.`);
+ }
+ requestAnimationFrame(tick);
+}
+$('snap').onclick=runPlay;
+configurePersonnel();render();window.addEventListener('resize',draw);
+</script></body></html>
